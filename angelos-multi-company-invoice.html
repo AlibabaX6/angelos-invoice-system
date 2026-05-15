@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Angelo's Power Washing Invoice Generator</title>
+  <style>
+    :root {
+      --ink: #1b1b1b;
+      --muted: #4d5766;
+      --line: #cfd7e3;
+      --paper: #ffffff;
+      --bg: #f4f7fb;
+      --navy: #1b3a6f;
+      --teal: #0f766e;
+      --gold: #ffbe2e;
+      --soft: #f8fafc;
+      --danger: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      min-height: 100vh;
+      padding: 24px 14px 40px;
+    }
+
+    .shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.1);
+      overflow: hidden;
+    }
+
+    .masthead {
+      padding: 22px;
+      border-bottom: 1px solid #004875;
+      background: linear-gradient(90deg, #1b3a6f, #005ea2);
+      color: #fff;
+    }
+
+    .masthead-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .subhead,
+    .company-copy {
+      margin: 0;
+      line-height: 1.45;
+    }
+
+    .brand-logo {
+      display: block;
+      width: min(210px, 100%);
+      height: auto;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .company-copy {
+      max-width: 190px;
+      font-size: 13px;
+      justify-self: start;
+      text-align: right;
+    }
+
+    .bill-to-brand {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: minmax(0, 1fr) 160px;
+      align-items: center;
+      margin-top: 14px;
+    }
+
+    .client-logo-card {
+      min-height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      padding: 0;
+    }
+
+    .client-logo-card img {
+      max-width: 100%;
+      max-height: 64px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .client-logo-empty {
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    .content {
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+    }
+
+    .panel-title {
+      margin: 0 0 12px;
+      color: var(--navy);
+      font-size: 18px;
+      letter-spacing: 0.01em;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--navy);
+      letter-spacing: 0.01em;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid #b8c3d6;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      background: #fff;
+      color: var(--ink);
+    }
+
+    textarea {
+      min-height: 94px;
+      resize: vertical;
+    }
+
+    .quick-row,
+    .actions,
+    .summary-actions,
+    .bill-to-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid #0c4a7b;
+      border-radius: 6px;
+      padding: 8px 12px;
+      min-height: 42px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 2px rgba(0, 0, 0, 0.18);
+      transition: background 120ms ease, transform 80ms ease;
+    }
+
+    .btn-primary { background: linear-gradient(180deg, #0b65ad, #00518f); color: #fff; }
+    .btn-accent { background: linear-gradient(180deg, #ffbe2e, #eea90c); color: #1b1b1b; border-color: #d39a17; }
+    .btn-soft { background: linear-gradient(180deg, #3e4e63, #2f3d4f); color: #fff; border-color: #2f3d4f; }
+    .btn-link { background: #ffffff; color: var(--navy); border-color: #7a8aa0; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:focus-visible {
+      outline: 2px solid #ffbe2e;
+      outline-offset: 2px;
+    }
+
+    .hint,
+    .status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .status { min-height: 20px; }
+
+    .equipment-grid {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .equipment-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--soft);
+      overflow: hidden;
+    }
+
+    .equipment-head {
+      padding: 14px;
+      background: #f0f7fb;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .equipment-head h3 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      color: var(--navy);
+    }
+
+    .equipment-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .equipment-tools {
+      padding: 12px 14px 0;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .chip-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .list-editor {
+      padding: 0 14px 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .list-editor-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .list-editor-row input {
+      flex: 1 1 180px;
+      min-width: 0;
+    }
+
+    .mini-btn {
+      border: 1px solid #7a8aa0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      background: #ffffff;
+      color: var(--navy);
+      font: inherit;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .chip-wrap {
+      padding: 14px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-height: 280px;
+      overflow: auto;
+      align-content: flex-start;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      position: relative;
+    }
+
+    .chip input {
+      position: absolute;
+      opacity: 0;
+      inset: 0;
+      cursor: pointer;
+    }
+
+    .chip span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 54px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #b8c3d6;
+      background: #fff;
+      color: var(--navy);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      transition: 140ms ease;
+    }
+
+    .chip input:checked + span {
+      background: var(--teal);
+      color: #fff;
+      border-color: var(--teal);
+      box-shadow: 0 10px 20px rgba(15, 118, 110, 0.18);
+    }
+
+    .chip input:focus-visible + span {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--navy);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    td:last-child,
+    th:last-child {
+      text-align: right;
+    }
+
+    tfoot td {
+      font-weight: 700;
+      color: var(--navy);
+      border-bottom: 0;
+    }
+
+    .totals-stack {
+      margin-left: auto;
+      max-width: 360px;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 6px 0;
+    }
+
+    .grand {
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 700;
+      border-top: 1px solid var(--line);
+      margin-top: 6px;
+      padding-top: 10px;
+    }
+
+    .danger-note {
+      color: var(--danger);
+      font-size: 13px;
+    }
+
+    .unit-list {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 820px) {
+      .grid.two,
+      .grid.three {
+        grid-template-columns: 1fr;
+      }
+
+      .bill-to-brand {
+        grid-template-columns: 1fr;
+      }
+
+      .company-copy {
+        text-align: left;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .shell {
+        box-shadow: none;
+        border: 0;
+        background: #fff;
+      }
+
+      .actions,
+      .summary-actions,
+      .bill-to-actions,
+      .equipment-tools,
+      .hint,
+      .status,
+      .danger-note,
+      #equipmentPanel,
+      #invoiceSetupPanel,
+      #monthlyLogPanel {
+        display: none !important;
+      }
+
+      .panel {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="masthead">
+      <div class="masthead-top">
+        <div>
+          <p class="company-copy">
+            <strong>Angelo's Power Washing</strong><br />
+            66 Centre Street<br />
+            Woodmere, NY 11598
+          </p>
+        </div>
+        <img class="brand-logo" src="./APW.png?v=20260315" alt="Angelo's Power Washing" />
+      </div>
+    </div>
+
+    <div class="content">
+      <section class="panel" id="invoiceSetupPanel">
+        <h2 class="panel-title">Invoice Setup</h2>
+        <div class="grid three">
+          <div class="field">
+            <label for="companySelect">Choose The Company Invoice You Would Like To Create</label>
+            <select id="companySelect"></select>
+          </div>
+          <div class="field">
+            <label for="invoiceDate">Invoice Date</label>
+            <input id="invoiceDate" type="date" />
+          </div>
+          <div class="field">
+            <label for="invoiceNumber">Invoice Number</label>
+            <input id="invoiceNumber" type="text" />
+          </div>
+        </div>
+        <div class="actions" style="margin-top: 14px;">
+          <button class="btn btn-soft" id="nextInvoiceBtn" type="button">Generate Next Invoice #</button>
+          <button class="btn btn-soft" id="saveDraftBtn" type="button">Save Draft</button>
+          <button class="btn btn-soft" id="resetFormBtn" type="button">Reset Form</button>
+          <button class="btn btn-soft" id="markCompleteBtn" type="button">Mark Complete</button>
+          <button class="btn btn-primary" id="printBtn" type="button">Print / Save PDF</button>
+          <button class="btn btn-accent" id="emailBtn" type="button">Email Client</button>
+        </div>
+        <p class="hint" id="templateHint"></p>
+        <p class="status" id="status"></p>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Bill To</h2>
+        <div class="grid two" style="margin-bottom: 14px;">
+          <div class="field">
+            <label>Print Invoice #</label>
+            <input id="printInvoiceNumber" type="text" readonly />
+          </div>
+          <div class="field">
+            <label>Print Invoice Date</label>
+            <input id="printInvoiceDate" type="text" readonly />
+          </div>
+        </div>
+        <div class="grid two">
+          <div class="field">
+            <label for="billToName">Client Name</label>
+            <input id="billToName" type="text" />
+          </div>
+          <div class="field">
+            <label for="billToEmail">Client Email</label>
+            <input id="billToEmail" type="email" placeholder="client@example.com" />
+          </div>
+        </div>
+        <div class="bill-to-brand">
+          <div class="field">
+            <label for="billToAddress">Address / Contact Block</label>
+            <textarea id="billToAddress"></textarea>
+          </div>
+          <div class="client-logo-card" id="clientLogoCard">
+            <div class="client-logo-empty" id="clientLogoEmpty">No company logo added yet.</div>
+            <img id="clientLogoImg" alt="" hidden />
+          </div>
+        </div>
+        <div class="bill-to-actions" style="margin-top: 14px;">
+          <button class="btn btn-link" id="emailFieldBtn" type="button">Open Email Draft</button>
+        </div>
+      </section>
+
+      <section class="panel" id="equipmentPanel">
+        <h2 class="panel-title">Equipment Selection</h2>
+        <p class="hint">Select each unit serviced. Totals update automatically by company format.</p>
+        <div class="equipment-grid" id="equipmentGrid"></div>
+      </section>
+
+      <section class="panel">
+        <h2 class="panel-title">Invoice Summary</h2>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Selected Vehicles</th>
+                <th>Count</th>
+                <th>Unit Price</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody id="summaryBody"></tbody>
+          </table>
+        </div>
+
+        <div class="grid two" style="margin-top: 16px;">
+          <div class="field">
+            <label for="taxLabel">Tax Label</label>
+            <input id="taxLabel" type="text" />
+          </div>
+          <div class="field">
+            <label for="taxValue">Tax / Surcharge Amount</label>
+            <input id="taxValue" type="number" step="0.01" min="0" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top: 16px;">
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Optional notes for this invoice"></textarea>
+        </div>
+
+        <div class="summary-actions" style="margin-top: 16px;">
+          <button class="btn btn-soft" id="selectAllBtn" type="button">Select All Units</button>
+          <button class="btn btn-soft" id="clearAllBtn" type="button">Clear All Units</button>
+        </div>
+
+        <div class="totals-stack" style="margin-top: 16px;">
+          <div class="total-line"><span>Total Vehicles</span><strong id="vehicleCount">0</strong></div>
+          <div class="total-line"><span>Subtotal</span><strong id="subtotalText">$0.00</strong></div>
+          <div class="total-line"><span id="taxLineLabel">Tax</span><strong id="taxText">$0.00</strong></div>
+          <div class="total-line grand"><span>Total Balance</span><span id="grandTotalText">$0.00</span></div>
+        </div>
+      </section>
+
+      <section class="panel" id="monthlyLogPanel">
+        <h2 class="panel-title">Monthly Invoice Log</h2>
+        <div class="summary-actions" style="margin-bottom: 12px;">
+          <button class="btn btn-soft" id="exportMonthCsvBtn" type="button">Export Shown Month CSV</button>
+          <button class="btn btn-soft" id="clearMonthLogBtn" type="button">Clear Shown Month Log</button>
+        </div>
+        <p class="hint" id="monthLogLabel"></p>
+        <div style="overflow-x: auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Invoice Date</th>
+                <th>Company</th>
+                <th>Invoice #</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody id="monthLogBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const APP_KEY = "angelos_multi_company_invoice_v1";
+    const SEQ_KEY = "angelos_multi_company_invoice_seq_v1";
+    const LISTS_KEY = "angelos_multi_company_invoice_lists_v1";
+    const MONTHLY_LOG_KEY = "angelos_multi_company_invoice_monthly_log_v1";
+    const COMPANY_INFO = {
+      businessName: "Angelo's Power Washing",
+      addressLines: ["66 Centre Street", "Woodmere, NY 11598"]
+    };
+
+    const COMPANY_ORDER = [
+      "bolla_transport_garden_city",
+      "bolla_transport_farmingdale",
+      "sprague",
+      "sprague_bronx",
+      "glacier_point",
+      "glacier_point_bronx",
+      "ambulnz",
+      "natural_foods",
+      "manhattan_beer_bronx",
+      "manhattan_beer_queens",
+      "manhattan_beer_wyandanch"
+    ];
+
+    const COMPANY_TEMPLATES = {
+      bolla_transport_garden_city: {
+        label: "Bolla Transport - Garden City",
+        prefix: "GC",
+        startNumber: 2535,
+        clientLogoSrc: "",
+        billToName: "Bolla Transport - Garden City",
+        billToEmail: "tmaflin@bollaoil.com",
+        billToAddress: "809 Stewart Ave\nGarden City, NY 11530",
+        taxMode: "rate",
+        taxRate: 0.08625,
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Garden City starts at GC-2535 with empty master lists.",
+        categories: [
+          { name: "Tractors", rate: 17.5, items: [] },
+          { name: "Trailers", rate: 17.5, items: [] },
+          { name: "Vans", rate: 15, items: [] },
+          { name: "Roll-off", rate: 20, items: [] },
+          { name: "Construction Trucks", rate: 15, items: [] }
+        ]
+      },
+      bolla_transport_farmingdale: {
+        label: "Bolla Transport - Farmingdale",
+        prefix: "FM",
+        startNumber: 1,
+        clientLogoSrc: "",
+        billToName: "Bolla Transport - Farmingdale",
+        billToEmail: "tmaflin@bollaoil.com",
+        billToAddress: "809 Stewart Ave\nGarden City, NY 11530",
+        taxMode: "rate",
+        taxRate: 0.08625,
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Farmingdale starts at FM-0001 with empty master lists.",
+        categories: [
+          { name: "Tractors", rate: 22.5, items: [] },
+          { name: "Trailers", rate: 22.5, items: [] }
+        ]
+      },
+      sprague: {
+        label: "Sprague - Long Island",
+        prefix: "SPG",
+        startNumber: 526,
+        clientLogoSrc: "./sprague-logo.png",
+        billToName: "Sprague - Long Island",
+        billToEmail: "apinvoices@spragueenergy.com",
+        billToAddress: "1 Bay Blvd\nLawrence, NY 11559\n603-766-7480",
+        taxMode: "category_rate",
+        taxRate: 0.08625,
+        taxableCategories: ["Straight Trucks", "Vans"],
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Sprague - Long Island uses shared Sprague numbering and starts with an empty master list.",
+        categories: [
+          { name: "Straight Trucks", rate: 35, items: [] },
+          { name: "Tractors", rate: 17.5, items: [] },
+          { name: "Trailers", rate: 17.5, items: [] },
+          { name: "Vans", rate: 15, items: [] }
+        ]
+      },
+      sprague_bronx: {
+        label: "Sprague - Bronx",
+        prefix: "SPG",
+        startNumber: 526,
+        clientLogoSrc: "./sprague-logo.png",
+        billToName: "Sprague - Bronx",
+        billToEmail: "apinvoices@spragueenergy.com",
+        billToAddress: "1 Bay Blvd\nLawrence, NY 11559\n603-766-7480",
+        taxMode: "category_rate",
+        taxRate: 0.08625,
+        taxableCategories: ["Straight Trucks", "Vans"],
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Sprague - Bronx uses shared Sprague numbering and starts with an empty master list.",
+        categories: [
+          { name: "Straight Trucks", rate: 45, items: [] },
+          { name: "Tractors", rate: 22.5, items: [] },
+          { name: "Trailers", rate: 22.5, items: [] },
+          { name: "Vans", rate: 15, items: [] }
+        ]
+      },
+      ambulnz: {
+        label: "Ambulnz",
+        prefix: "AMB",
+        startNumber: 141,
+        clientLogoSrc: "./ambulnz-logo.png",
+        billToName: "Ambulnz",
+        billToEmail: "ap@ambulnz.com",
+        billToAddress: "35 West 35th Street\n6th Floor\nNew York, NY 10001",
+        subjectAttention: "Attn: Dan",
+        taxMode: "rate",
+        taxRate: 0.08625,
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Ambulnz uses one equipment pool pulled from the sample workbook master list.",
+        categories: [
+          { name: "Ambulances", rate: 10, items: ["O3", "O1", "DG3", "MTU-9", "MTU-07", "MTU-8", "208", "147", "133", "132", "154", "137", "135", "155", "102", "146", "307", "455", "986", "O63", "O92", "505", "23", "452", "19470", "O88", "10", "11", "50", "114", "9", "O1", "14", "8", "114", "105", "100", "103", "MTU6", "300", "148", "130", "138", "129", "139", "136", "WICF-03", "134"] }
+        ]
+      },
+      natural_foods: {
+        label: "Natural Foods Inc",
+        prefix: "NFI",
+        startNumber: 102,
+        clientLogoSrc: "./natural-foods-logo.jpg",
+        billToName: "Natural Foods Inc",
+        billToEmail: "billing@naturalfoodsinc.com",
+        billToAddress: "475A Doughty Blvd\nInwood, NY 11096",
+        subjectAttention: "Attn: Ula Haki",
+        taxMode: "rate",
+        taxRate: 0.08625,
+        taxLabel: "Sales Tax @ 8.625%",
+        note: "Natural Foods pulls trucks, tractors, and trailers from the 3-7-2026 sample workbook.",
+        categories: [
+          { name: "Straight Trucks", rate: 17, items: ["55", "68", "50", "58", "67", "62", "65", "51", "63", "52", "59", "29", "30", "31", "32", "33", "35", "36", "37", "38", "39", "40", "41", "34", "17", "23", "42", "43", "44", "45", "46", "47", "48", "49", "66", "31", "61", "57", "53"] },
+          { name: "Tractors", rate: 17, items: ["900"] },
+          { name: "Trailers", rate: 17, items: ["T-900"] }
+        ]
+      },
+      manhattan_beer_wyandanch: {
+        label: "Manhattan Beer - Wyandanch",
+        prefix: "MB-WY",
+        startNumber: 9203,
+        clientLogoSrc: "./manhattan-beer-logo.png",
+        billToName: "Manhattan Beer - Wyandanch",
+        billToEmail: "ap@manhattanbeer.net",
+        billToAddress: "401 Acorn Street\nWyandanch, NY 11798",
+        taxMode: "rate",
+        taxRate: 0.08875,
+        taxLabel: "Sales Tax @ 8.875%",
+        note: "Wyandanch rates and categories were pulled from the 3-7-2026 Manhattan Beer sample workbook.",
+        categories: [
+          { name: "Tractors", rate: 7, items: ["WTL-609", "WT-610", "WTL-815", "WTL-647", "WTL-831", "WTL-740", "WTL-821", "WTL-816", "WTL-822", "WTL-614", "WTL-743", "WTL-613", "WTL-744", "WTL-608", "WTL-742", "WTL-825", "WTL-823", "WTL-607", "WTL-566", "WTL-573"] },
+          { name: "Box Trailers", rate: 10, items: ["TL-759", "TL-790", "TL-740", "TL-815", "TL-822", "TL-836", "TL-741", "TL-803", "TL-821", "TL-830", "TL-833", "TL-743", "TL-12", "TL-806", "TL-742", "TL-823", "TL-835", "TL-744", "TL-832", "TL-816", "TL-834", "TL-805", "TL-831", "TL-804", "TL-602", "TL-601", "TL-18", "TL-589", "TL-14", "TL-825", "TL-594"] },
+          { name: "Straight Trucks", rate: 7, items: ["791", "788", "790", "789", "635", "787", "799", "786", "797", "785", "637", "783", "R-4", "782", "798", "708", "CNG-27", "R-1", "632", "823", "775", "638", "831", "793", "784", "1037", "1034", "1014", "1004", "1023", "501", "1021", "1028", "1024", "1006", "1027", "1016"] },
+          { name: "Goose Necks", rate: 10, items: ["WTL-121", "WTL-118", "WTL-687", "WTL-681", "WTL-679", "WTL-120", "WTL-721", "WTL-131", "WTL-686", "WTL-685", "WTL-722", "WTL-689", "WTL-694", "WTL-677", "WTL-692", "WTL-623", "WTL-688", "WTL-693", "WTL-115", "WTL-119", "WTL-675", "WTL-670", "WTL-684", "WTL-84", "WTL-690", "WTL-680", "WTL-691", "WTL-674", "WTL-672", "WTL-676", "WTL-620", "WTL-673", "WTL-720", "WTL-671", "WTL-678", "WTL-743", "WTL-46", "WTL-47", "WTL-48", "WTL-74", "WTL-98", "WT-90", "WTL-93", "WT-89", "WTL-803"] },
+          { name: "Vans", rate: 4, items: ["199", "SET-16", "SET -12", "SET-9", "SET-5", "35090", "SET-1", "299"] }
+        ]
+      },
+      manhattan_beer_queens: {
+        label: "Manhattan Beer - Queens",
+        prefix: "MBD-QNS",
+        startNumber: 7203,
+        clientLogoSrc: "./manhattan-beer-logo.png",
+        billToName: "Manhattan Beer - Queens",
+        billToEmail: "ap@manhattanbeer.net",
+        billToAddress: "",
+        subjectAttention: "Attn: Accounts Payable",
+        taxMode: "rate",
+        taxRate: 0.08875,
+        taxLabel: "Sales Tax @ 8.875%",
+        note: "Queens rates and categories were pulled from the 3-8-2026 Manhattan Beer sample workbook.",
+        categories: [
+          { name: "Straight Trucks", rate: 7, items: ["4018", "2023", "1023", "406", "410", "408", "518", "376", "407", "409", "502", "411", "2033", "794", "629", "775", "777", "773", "779", "778", "510", "565", "578", "CNG-33", "CNG-23", "CNG-30", "CNG-38", "CNG-34", "CNG-29", "CNG-32", "550", "404", "4080", "401", "414", "400", "4022", "4078", "373", "4081", "388", "413", "415", "403"] },
+          { name: "Tractors", rate: 7, items: ["Tl-580", "TL-63", "TL-96", "TL-95", "TL-94", "TL-573", "TL-819", "TL-562", "TL-577", "TL-616", "T-579", "TL-102", "TL-820", "TL-574", "TL-568", "TL-612", "TL-567", "TL-575", "TL-105", "TL-561", "T-580", "WT-62", "WT-60", "T-819", "TL-112"] },
+          { name: "Goose Necks", rate: 10, items: ["QTL-52", "QTL-122", "QTL-89", "QTL-75", "QTL-113", "QTL-72", "QT-92", "QTL-77", "QTL-87", "QTL-93", "QTL-112", "QTL-125", "QTL-826", "QTL-11", "QTL-561", "QTL-578", "QTL-128", "QTL-90", "QTL-51", "QTL-14", "QTL-34", "QTL-30", "QTL-54", "QTL-25", "QTL-28", "QTL-35", "QTL-2", "QTL-20", "QTL-24", "QTL-5", "QTL-27", "QTL-23", "QTL-129", "QT-69"] },
+          { name: "Vans", rate: 4, items: ["23", "295", "238", "275", "17608", "250", "16508"] },
+          { name: "Trailers", rate: 10, items: ["TL-573", "TL-579", "TL-580", "TL-819", "TL-562", "TL-616", "TL-578", "TL-102", "TL-820", "TL-575", "TL-561", "TL-789", "TL-787", "TL-567", "TL-798", "TL-568", "TL-105", "TL-577", "TL-565", "TL-574", "TL-11", "TL-600", "TL-595", "TL-603", "TL-605", "TL-757", "TL-826", "TL-14"] }
+        ]
+      },
+      manhattan_beer_bronx: {
+        label: "Manhattan Beer - Bronx",
+        prefix: "MB-BX",
+        startNumber: 8202,
+        clientLogoSrc: "./manhattan-beer-logo.png",
+        billToName: "Manhattan Beer - Bronx",
+        billToEmail: "ap@manhattanbeer.net",
+        billToAddress: "955 East 149th Street\nBronx, NY 10455",
+        subjectAttention: "Attn: Accounts Payable",
+        taxMode: "rate",
+        taxRate: 0.08875,
+        taxLabel: "Sales Tax @ 8.875%",
+        note: "Bronx rates and categories were pulled from the 3-1-2026 Manhattan Beer sample workbook.",
+        categories: [
+          { name: "Straight Trucks", rate: 7, items: ["537", "742", "741", "733", "714", "770", "736", "638", "764", "796", "807", "762", "761", "765", "548", "534", "795", "772", "545", "763", "538", "540", "552", "530", "557", "525", "394", "28", "719", "556", "26", "32", "542", "29", "558", "559", "771", "735", "R-2", "543", "793", "36", "1021", "737", "792", "536", "CNG-36", "CNG-35", "CNG-29", "CNG-32", "CNG-28", "CNG-38", "CNG-26", "CNG-27", "CNG-37", "CNG-31", "CNG-30", "553", "532", "37", "31", "738", "533", "38"] },
+          { name: "Tractors", rate: 7, items: ["T-624", "YH-2", "T_754", "T-735", "T-611", "T-570", "T-699", "T-827", "T-649", "T-618", "T-619", "T-100", "T-645", "T-724", "T-698", "T-750", "T-828", "T-648", "T-571", "T-111", "T-736", "T-753", "T-576", "T-569", "T-136", "T-630", "T-701", "T-800", "T-801", "T-825"] },
+          { name: "Goose Neck/Trailers", rate: 10, items: ["BT-74", "BT-78", "BT-81", "BTL-86", "BT-106", "BT-622", "BT-76", "BT-85", "BT-110", "BT-99", "BT-129", "BT-130", "BT-109", "BT-90", "BT-65", "TB-55", "BT-72", "BT-93", "BT-48", "BT-49", "T-211"] },
+          { name: "Vans", rate: 4, items: ["12480", "298", "50", "238", "51", "52", "48", "24", "22", "9594", "6762", "1888", "742", "8706", "1898", "295", "42089", "279", "271", "39341", "41", "12490", "300", "8704", "1880", "8705", "294", "6968", "12048", "1891", "292", "8303", "296", "3341", "6892", "8713", "8707", "398", "1101", "4558", "1813", "6788", "39335", "6787", "1343", "1887", "40", "SET-3", "SET-2", "SET-6", "SET-16"] },
+          { name: "Box Trailers", rate: 10, items: ["RT-616", "TL-22", "TL-581", "TL-827", "TL-587", "TL-589", "TL-758", "TL-582", "TL-753", "TL-592", "TL-746", "TL-624", "TL-786", "TL-757", "TL-794", "TL-593", "TL-601", "TL-748", "TL-18", "TL-736", "TL-735", "TL-754", "TL-14", "TL-602", "TL-750", "TL-569", "TL-756", "TL-571", "TL-570", "TL-585", "TL-785", "TL-576", "TL-749", "TL-828", "TL-798", "TL-619", "Tl-606", "TL-586", "TL-784", "TL-618", "TL-103", "TL-599", "TL-829", "TL-604", "TL-23", "TL-24", "TL-2", "TL-795", "TL-797", "TL-782"] }
+        ]
+      },
+      glacier_point: {
+        label: "GlacierPoint Enterprises - Long Island",
+        prefix: "DI",
+        startNumber: 115,
+        clientLogoSrc: "./glacierpoint-logo.png",
+        billToName: "GlacierPoint Enterprises - Long Island",
+        billToEmail: "APInvoicesNYM@glacierpointenterprises.com",
+        billToAddress: "701 Zerega Ave\nBronx, NY 10473\n718-518-8700",
+        taxMode: "rate",
+        taxRate: 0.08625,
+        taxLabel: "Tax Amount (LI)",
+        note: "GlacierPoint - Long Island shares GlacierPoint numbering and starts with an empty master list.",
+        categories: [
+          { name: "Straight Trucks", rate: 7, items: [] },
+          { name: "Inside", rate: 7, items: [] },
+          { name: "Trailers", rate: 15, items: [] },
+          { name: "Vans", rate: 7, items: [] }
+        ]
+      },
+      glacier_point_bronx: {
+        label: "GlacierPoint - Bronx",
+        prefix: "DI",
+        startNumber: 115,
+        clientLogoSrc: "./glacierpoint-logo.png",
+        billToName: "GlacierPoint - Bronx",
+        billToEmail: "APInvoicesNYM@glacierpointenterprises.com",
+        billToAddress: "701 Zerega Ave\nBronx, NY 10473\n718-518-8700",
+        taxMode: "rate",
+        taxRate: 0.08875,
+        taxLabel: "Tax Amount (NYC)",
+        note: "GlacierPoint - Bronx uses shared GlacierPoint numbering and the Bronx vehicle list.",
+        categories: [
+          { name: "Straight Trucks", rate: 7, items: ["714", "347", "78", "907", "71", "6", "13", "31", "338", "326", "765", "763", "199", "859", "764", "335", "762", "766", "761", "200", "759", "767", "760", "339", "79", "41"] },
+          { name: "Inside", rate: 7, items: ["714", "347", "338", "326", "765", "763", "199", "859", "764", "335", "766", "762", "761", "759", "200", "767", "760", "339"] },
+          { name: "Trailers", rate: 15, items: ["T-092"] },
+          { name: "Vans", rate: 7, items: [] }
+        ]
+      }
+    };
+
+    const els = {
+      companySelect: document.getElementById("companySelect"),
+      invoiceDate: document.getElementById("invoiceDate"),
+      invoiceNumber: document.getElementById("invoiceNumber"),
+      printInvoiceDate: document.getElementById("printInvoiceDate"),
+      printInvoiceNumber: document.getElementById("printInvoiceNumber"),
+      billToName: document.getElementById("billToName"),
+      billToEmail: document.getElementById("billToEmail"),
+      billToAddress: document.getElementById("billToAddress"),
+      clientLogoCard: document.getElementById("clientLogoCard"),
+      clientLogoImg: document.getElementById("clientLogoImg"),
+      clientLogoEmpty: document.getElementById("clientLogoEmpty"),
+      taxLabel: document.getElementById("taxLabel"),
+      taxValue: document.getElementById("taxValue"),
+      notes: document.getElementById("notes"),
+      equipmentGrid: document.getElementById("equipmentGrid"),
+      summaryBody: document.getElementById("summaryBody"),
+      monthLogBody: document.getElementById("monthLogBody"),
+      monthLogLabel: document.getElementById("monthLogLabel"),
+      vehicleCount: document.getElementById("vehicleCount"),
+      subtotalText: document.getElementById("subtotalText"),
+      taxText: document.getElementById("taxText"),
+      taxLineLabel: document.getElementById("taxLineLabel"),
+      grandTotalText: document.getElementById("grandTotalText"),
+      status: document.getElementById("status"),
+      templateHint: document.getElementById("templateHint")
+    };
+
+    function currency(value) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
+    }
+
+    function setStatus(text) {
+      els.status.textContent = text || "";
+    }
+
+    function currentCompanyKey() {
+      return els.companySelect.value;
+    }
+
+    function currentTemplate() {
+      return COMPANY_TEMPLATES[currentCompanyKey()];
+    }
+
+    function getStore() {
+      try {
+        return JSON.parse(localStorage.getItem(APP_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function setStore(store) {
+      localStorage.setItem(APP_KEY, JSON.stringify(store));
+    }
+
+    function getSeqStore() {
+      try {
+        return JSON.parse(localStorage.getItem(SEQ_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function setSeqStore(store) {
+      localStorage.setItem(SEQ_KEY, JSON.stringify(store));
+    }
+
+    function getListStore() {
+      try {
+        return JSON.parse(localStorage.getItem(LISTS_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function setListStore(store) {
+      localStorage.setItem(LISTS_KEY, JSON.stringify(store));
+    }
+
+    function getMonthlyLogStore() {
+      try {
+        return JSON.parse(localStorage.getItem(MONTHLY_LOG_KEY) || "{}");
+      } catch {
+        return {};
+      }
+    }
+
+    function setMonthlyLogStore(store) {
+      localStorage.setItem(MONTHLY_LOG_KEY, JSON.stringify(store));
+    }
+
+    function uniqueItems(items) {
+      return Array.from(new Set((items || []).map((item) => String(item || "").trim()).filter(Boolean)));
+    }
+
+    function getCategoryItems(companyKey, categoryName) {
+      const template = COMPANY_TEMPLATES[companyKey];
+      const category = template.categories.find((entry) => entry.name === categoryName);
+      const listStore = getListStore();
+      const override = listStore[companyKey]?.[categoryName];
+      return uniqueItems(Array.isArray(override) ? override : category.items);
+    }
+
+    function setCategoryItems(companyKey, categoryName, items) {
+      const listStore = getListStore();
+      if (!listStore[companyKey]) listStore[companyKey] = {};
+      listStore[companyKey][categoryName] = uniqueItems(items);
+      setListStore(listStore);
+    }
+
+    function resetCategoryItems(companyKey, categoryName) {
+      const listStore = getListStore();
+      if (listStore[companyKey]) {
+        delete listStore[companyKey][categoryName];
+        if (!Object.keys(listStore[companyKey]).length) {
+          delete listStore[companyKey];
+        }
+        setListStore(listStore);
+      }
+    }
+
+    function todayIso() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    }
+
+    function monthKeyFromDate(dateValue) {
+      return (dateValue || todayIso()).slice(0, 7);
+    }
+
+    function monthLabel(monthKey) {
+      const [year, month] = monthKey.split("-");
+      const dt = new Date(Number(year), Number(month) - 1, 1);
+      return dt.toLocaleString("en-US", { month: "long", year: "numeric" });
+    }
+
+    function formatInvoiceNumber(template, n) {
+      return template.prefix + "-" + String(n).padStart(4, "0");
+    }
+
+    function getNextSequence(template) {
+      const seqStore = getSeqStore();
+      const lastUsed = Number(seqStore[template.prefix] || template.startNumber - 1);
+      const next = lastUsed + 1;
+      seqStore[template.prefix] = next;
+      setSeqStore(seqStore);
+      return next;
+    }
+
+    function defaultStateForCompany(key) {
+      const template = COMPANY_TEMPLATES[key];
+      return {
+        invoiceDate: todayIso(),
+        invoiceNumber: formatInvoiceNumber(template, template.startNumber),
+        billToName: template.billToName,
+        billToEmail: template.billToEmail,
+        billToAddress: template.billToAddress,
+        taxLabel: template.taxLabel,
+        taxValue: template.taxMode === "manual" ? template.taxValue : 0,
+        notes: "",
+        selections: Object.fromEntries(template.categories.map((category) => [category.name, []]))
+      };
+    }
+
+    function getCurrentSelections() {
+      const selections = {};
+      els.equipmentGrid.querySelectorAll("[data-category]").forEach((card) => {
+        const category = card.dataset.category;
+        selections[category] = Array.from(card.querySelectorAll("input[type='checkbox']:checked")).map((input) => input.value);
+      });
+      return selections;
+    }
+
+    function pruneSelectionsForCurrentLists(selections) {
+      const companyKey = currentCompanyKey();
+      const nextSelections = {};
+      currentTemplate().categories.forEach((category) => {
+        const validItems = new Set(getCategoryItems(companyKey, category.name));
+        nextSelections[category.name] = (selections?.[category.name] || []).filter((item) => validItems.has(item));
+      });
+      return nextSelections;
+    }
+
+    function saveDraft(silent) {
+      const store = getStore();
+      store[currentCompanyKey()] = {
+        invoiceDate: els.invoiceDate.value,
+        invoiceNumber: els.invoiceNumber.value.trim(),
+        billToName: els.billToName.value.trim(),
+        billToEmail: els.billToEmail.value.trim(),
+        billToAddress: els.billToAddress.value,
+        taxLabel: els.taxLabel.value.trim(),
+        taxValue: Number(els.taxValue.value || "0"),
+        notes: els.notes.value,
+        selections: pruneSelectionsForCurrentLists(getCurrentSelections())
+      };
+      setStore(store);
+      if (!silent) setStatus("Draft saved locally for " + currentTemplate().label + ".");
+    }
+
+    function loadDraft(companyKey) {
+      const store = getStore();
+      return store[companyKey] || defaultStateForCompany(companyKey);
+    }
+
+    function buildCompanyOptions() {
+      COMPANY_ORDER.forEach((key) => {
+        const template = COMPANY_TEMPLATES[key];
+        if (!template) return;
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = template.label;
+        els.companySelect.appendChild(option);
+      });
+    }
+
+    function updateClientLogo() {
+      const template = currentTemplate();
+      if (template.clientLogoSrc) {
+        els.clientLogoImg.src = template.clientLogoSrc;
+        els.clientLogoImg.alt = template.label + " logo";
+        els.clientLogoImg.hidden = false;
+        els.clientLogoEmpty.hidden = true;
+      } else {
+        els.clientLogoImg.removeAttribute("src");
+        els.clientLogoImg.alt = "";
+        els.clientLogoImg.hidden = true;
+        els.clientLogoEmpty.hidden = false;
+      }
+    }
+
+    function buildEquipmentCards(state) {
+      const template = currentTemplate();
+      const companyKey = currentCompanyKey();
+      els.equipmentGrid.innerHTML = "";
+
+      template.categories.forEach((category) => {
+        const card = document.createElement("section");
+        card.className = "equipment-card";
+        card.dataset.category = category.name;
+        const selectedSet = new Set(state.selections?.[category.name] || []);
+        const dedupedItems = getCategoryItems(companyKey, category.name);
+
+        card.innerHTML =
+          '<div class="equipment-head">' +
+            "<h3>" + category.name + "</h3>" +
+            '<div class="equipment-meta">' +
+              "<span>" + dedupedItems.length + " listed units</span>" +
+              "<span>" + currency(category.rate) + " each</span>" +
+            "</div>" +
+          "</div>" +
+          '<div class="equipment-tools">' +
+            '<div class="chip-actions">' +
+              '<button class="mini-btn" type="button" data-action="all">Select All</button>' +
+              '<button class="mini-btn" type="button" data-action="none">Clear</button>' +
+            "</div>" +
+          "</div>" +
+          '<div class="chip-wrap"></div>' +
+          '<div class="list-editor">' +
+            '<div class="list-editor-row">' +
+              '<input type="text" placeholder="Add vehicle to master list" data-list-input="1" />' +
+              '<button class="mini-btn" type="button" data-action="add-item">Add Vehicle</button>' +
+            "</div>" +
+            '<div class="list-editor-row">' +
+              '<button class="mini-btn" type="button" data-action="remove-selected">Remove Selected From List</button>' +
+              '<button class="mini-btn" type="button" data-action="reset-list">Reset Original List</button>' +
+            "</div>" +
+          "</div>";
+
+        const chipWrap = card.querySelector(".chip-wrap");
+        dedupedItems.forEach((item) => {
+          const chip = document.createElement("label");
+          chip.className = "chip";
+          chip.innerHTML =
+            '<input type="checkbox" value="' + item + '"' + (selectedSet.has(item) ? " checked" : "") + " />" +
+            "<span>" + item + "</span>";
+          chipWrap.appendChild(chip);
+        });
+
+        card.addEventListener("click", (event) => {
+          const action = event.target.dataset.action;
+          if (!action) return;
+          const checkboxes = card.querySelectorAll(".chip input[type='checkbox']");
+          if (action === "all" || action === "none") {
+            checkboxes.forEach((checkbox) => {
+              checkbox.checked = action === "all";
+            });
+            recalc();
+            saveDraft(true);
+            return;
+          }
+
+          if (action === "add-item") {
+            const input = card.querySelector("[data-list-input='1']");
+            const raw = input.value.trim();
+            if (!raw) return;
+            const nextItems = uniqueItems(dedupedItems.concat(raw));
+            setCategoryItems(companyKey, category.name, nextItems);
+            const stateNow = loadDraft(companyKey);
+            stateNow.selections = pruneSelectionsForCurrentLists(stateNow.selections);
+            const store = getStore();
+            store[companyKey] = stateNow;
+            setStore(store);
+            applyCompanyState(companyKey);
+            setStatus("Saved vehicle list change for " + template.label + " / " + category.name + ".");
+            return;
+          }
+
+          if (action === "remove-selected") {
+            const selectedUnits = Array.from(checkboxes).filter((checkbox) => checkbox.checked).map((checkbox) => checkbox.value);
+            if (!selectedUnits.length) {
+              setStatus("Select vehicles first, then choose remove.");
+              return;
+            }
+            const nextItems = dedupedItems.filter((item) => !selectedUnits.includes(item));
+            setCategoryItems(companyKey, category.name, nextItems);
+            const store = getStore();
+            const stateNow = loadDraft(companyKey);
+            stateNow.selections = pruneSelectionsForCurrentLists(stateNow.selections);
+            store[companyKey] = stateNow;
+            setStore(store);
+            applyCompanyState(companyKey);
+            setStatus("Removed selected vehicles from " + category.name + ".");
+            return;
+          }
+
+          if (action === "reset-list") {
+            resetCategoryItems(companyKey, category.name);
+            const store = getStore();
+            const stateNow = loadDraft(companyKey);
+            stateNow.selections = pruneSelectionsForCurrentLists(stateNow.selections);
+            store[companyKey] = stateNow;
+            setStore(store);
+            applyCompanyState(companyKey);
+            setStatus("Reset " + category.name + " to the original spreadsheet list.");
+          }
+        });
+
+        card.addEventListener("change", () => {
+          recalc();
+          saveDraft(true);
+        });
+
+        card.querySelector("[data-list-input='1']").addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            card.querySelector('[data-action="add-item"]').click();
+          }
+        });
+
+        els.equipmentGrid.appendChild(card);
+      });
+    }
+
+    function applyCompanyState(companyKey) {
+      const template = COMPANY_TEMPLATES[companyKey];
+      const state = loadDraft(companyKey);
+      els.invoiceDate.value = state.invoiceDate || todayIso();
+      els.invoiceNumber.value = state.invoiceNumber || formatInvoiceNumber(template, template.startNumber);
+      els.billToName.value = state.billToName || template.billToName;
+      els.billToEmail.value = state.billToEmail || template.billToEmail;
+      els.billToAddress.value = state.billToAddress || template.billToAddress;
+      updateClientLogo();
+      els.taxLabel.value = state.taxLabel || template.taxLabel;
+      els.notes.value = state.notes || "";
+      buildEquipmentCards(state);
+      syncTaxInputMode();
+      if (template.taxMode === "manual") {
+        els.taxValue.value = Number(state.taxValue ?? template.taxValue).toFixed(2);
+      } else {
+        els.taxValue.value = "0.00";
+      }
+      els.templateHint.textContent = template.note;
+      recalc();
+    }
+
+    function syncTaxInputMode() {
+      const template = currentTemplate();
+      const isManual = template.taxMode === "manual";
+      els.taxValue.disabled = !isManual;
+      els.taxValue.title = isManual ? "" : "Computed automatically from the company tax rate.";
+    }
+
+    function syncPrintableInvoiceMeta() {
+      els.printInvoiceNumber.value = els.invoiceNumber.value || "";
+      els.printInvoiceDate.value = els.invoiceDate.value || "";
+    }
+
+    function summaryRows() {
+      const template = currentTemplate();
+      return Array.from(els.equipmentGrid.querySelectorAll("[data-category]")).map((card, index) => {
+        const category = template.categories[index];
+        const units = Array.from(card.querySelectorAll("input[type='checkbox']:checked")).map((input) => input.value);
+        const count = units.length;
+        const amount = count * category.rate;
+        return {
+          name: category.name,
+          units,
+          count,
+          rate: category.rate,
+          amount
+        };
+      });
+    }
+
+    function currentInvoiceTotals() {
+      const template = currentTemplate();
+      const rows = summaryRows();
+      const subtotal = rows.reduce((sum, row) => sum + row.amount, 0);
+      let taxableBase = subtotal;
+      if (template.taxMode === "category_rate" && Array.isArray(template.taxableCategories)) {
+        const allowed = new Set(template.taxableCategories);
+        taxableBase = rows
+          .filter((row) => allowed.has(row.name))
+          .reduce((sum, row) => sum + row.amount, 0);
+      }
+      const taxAmount = template.taxMode === "manual"
+        ? Number(els.taxValue.value || "0")
+        : taxableBase * Number(template.taxRate || 0);
+      return {
+        subtotal,
+        taxAmount,
+        grandTotal: subtotal + taxAmount
+      };
+    }
+
+    function syncMonthlyLogEntry() {
+      const invoiceNumber = els.invoiceNumber.value.trim();
+      if (!invoiceNumber) return;
+      const monthKey = monthKeyFromDate(els.invoiceDate.value);
+      const logStore = getMonthlyLogStore();
+      if (!logStore[monthKey]) logStore[monthKey] = [];
+      const totals = currentInvoiceTotals();
+      const entry = {
+        invoiceDate: els.invoiceDate.value || todayIso(),
+        company: currentTemplate().label,
+        companyKey: currentCompanyKey(),
+        invoiceNumber,
+        total: totals.grandTotal
+      };
+      const existingIndex = logStore[monthKey].findIndex((item) =>
+        item.invoiceNumber === invoiceNumber && item.companyKey === currentCompanyKey()
+      );
+      if (existingIndex >= 0) {
+        logStore[monthKey][existingIndex] = entry;
+      } else {
+        logStore[monthKey].push(entry);
+      }
+      logStore[monthKey].sort((a, b) => {
+        if (a.invoiceDate !== b.invoiceDate) return a.invoiceDate.localeCompare(b.invoiceDate);
+        return a.invoiceNumber.localeCompare(b.invoiceNumber);
+      });
+      setMonthlyLogStore(logStore);
+    }
+
+    function renderMonthlyLog() {
+      const monthKey = monthKeyFromDate(els.invoiceDate.value);
+      const entries = (getMonthlyLogStore()[monthKey] || []).slice();
+      els.monthLogLabel.textContent = "Showing invoices for " + monthLabel(monthKey) + ".";
+      els.monthLogBody.innerHTML = "";
+      if (!entries.length) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="4">No invoices logged for this month yet.</td>';
+        els.monthLogBody.appendChild(tr);
+        return;
+      }
+      entries.forEach((entry) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          "<td>" + entry.invoiceDate + "</td>" +
+          "<td>" + entry.company + "</td>" +
+          "<td>" + entry.invoiceNumber + "</td>" +
+          "<td>" + currency(entry.total) + "</td>";
+        els.monthLogBody.appendChild(tr);
+      });
+    }
+
+    function recalc() {
+      const template = currentTemplate();
+      const rows = summaryRows();
+      const totals = currentInvoiceTotals();
+      const subtotal = totals.subtotal;
+      const vehicleCount = rows.reduce((sum, row) => sum + row.count, 0);
+      const taxAmount = totals.taxAmount;
+      const grandTotal = totals.grandTotal;
+
+      els.summaryBody.innerHTML = "";
+      rows.forEach((row) => {
+        const tr = document.createElement("tr");
+        const unitText = row.units.length ? row.units.join(", ") : "None selected";
+        tr.innerHTML =
+          "<td>" + row.name + "</td>" +
+          '<td class="unit-list">' + unitText + "</td>" +
+          "<td>" + row.count + "</td>" +
+          "<td>" + currency(row.rate) + "</td>" +
+          "<td>" + currency(row.amount) + "</td>";
+        els.summaryBody.appendChild(tr);
+      });
+
+      els.vehicleCount.textContent = String(vehicleCount);
+      els.subtotalText.textContent = currency(subtotal);
+      els.taxLineLabel.textContent = els.taxLabel.value || "Tax";
+      els.taxText.textContent = currency(taxAmount);
+      els.grandTotalText.textContent = currency(grandTotal);
+      syncPrintableInvoiceMeta();
+
+      if (template.taxMode !== "manual") {
+        els.taxValue.value = taxAmount.toFixed(2);
+      }
+
+      syncMonthlyLogEntry();
+      renderMonthlyLog();
+    }
+
+    function generateNextInvoiceNumber() {
+      const template = currentTemplate();
+      const next = getNextSequence(template);
+      els.invoiceNumber.value = formatInvoiceNumber(template, next);
+      saveDraft(true);
+      setStatus("Generated " + els.invoiceNumber.value + ".");
+    }
+
+    function resetCurrentForm() {
+      const companyKey = currentCompanyKey();
+      const store = getStore();
+      store[companyKey] = defaultStateForCompany(companyKey);
+      setStore(store);
+      applyCompanyState(companyKey);
+      generateNextInvoiceNumber();
+      setStatus("Form reset for " + currentTemplate().label + ".");
+    }
+
+    function clearShownMonthLog() {
+      const monthKey = monthKeyFromDate(els.invoiceDate.value);
+      const logStore = getMonthlyLogStore();
+      delete logStore[monthKey];
+      setMonthlyLogStore(logStore);
+      renderMonthlyLog();
+      setStatus("Cleared monthly log for " + monthLabel(monthKey) + ".");
+    }
+
+    function suggestedPdfName() {
+      const company = (currentTemplate().label || "Invoice").replace(/[\\/:*?"<>|]+/g, " ").trim();
+      const date = (els.invoiceDate.value || todayIso()).trim();
+      return company + " " + date;
+    }
+
+    function printWithSuggestedFilename() {
+      const originalTitle = document.title;
+      document.title = suggestedPdfName();
+      window.print();
+      window.setTimeout(() => {
+        document.title = originalTitle;
+      }, 1000);
+    }
+
+    function markComplete() {
+      saveDraft(true);
+      syncMonthlyLogEntry();
+      renderMonthlyLog();
+      setStatus("Invoice marked complete. Save the PDF in the print dialog.");
+      printWithSuggestedFilename();
+    }
+
+    function exportShownMonthCsv() {
+      const monthKey = monthKeyFromDate(els.invoiceDate.value);
+      const entries = (getMonthlyLogStore()[monthKey] || []).slice();
+      if (!entries.length) {
+        setStatus("No monthly log entries to export for " + monthLabel(monthKey) + ".");
+        return;
+      }
+
+      const escapeCsv = (value) => {
+        const text = String(value ?? "");
+        return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+      };
+
+      const rows = [
+        ["Invoice Date", "Company", "Invoice Number", "Total"],
+        ...entries.map((entry) => [
+          entry.invoiceDate,
+          entry.company,
+          entry.invoiceNumber,
+          Number(entry.total || 0).toFixed(2)
+        ])
+      ];
+
+      const csv = rows.map((row) => row.map(escapeCsv).join(",")).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "invoice-log-" + monthKey + ".csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      setStatus("Exported monthly log CSV for " + monthLabel(monthKey) + ".");
+    }
+
+    function emailDraft() {
+      const email = els.billToEmail.value.trim();
+      if (!email) {
+        setStatus("Add a client email first.");
+        return;
+      }
+
+      const template = currentTemplate();
+      const rows = summaryRows().filter((row) => row.count > 0);
+      const subtotal = rows.reduce((sum, row) => sum + row.amount, 0);
+      const taxAmount = Number(els.taxValue.value || "0");
+      const total = subtotal + taxAmount;
+      const notes = els.notes.value.trim();
+
+      const lines = [
+        "Invoice #: " + els.invoiceNumber.value.trim(),
+        "Invoice Date: " + els.invoiceDate.value,
+        "",
+        "Bill To:",
+        els.billToName.value.trim(),
+        els.billToAddress.value.trim(),
+        "",
+        "Summary:"
+      ];
+
+      rows.forEach((row) => {
+        lines.push(row.name + ": " + row.count + " x " + currency(row.rate) + " = " + currency(row.amount));
+        lines.push("Units: " + row.units.join(", "));
+      });
+
+      lines.push("");
+      lines.push("Subtotal: " + currency(subtotal));
+      lines.push((els.taxLabel.value || "Tax") + ": " + currency(taxAmount));
+      lines.push("Total Balance: " + currency(total));
+
+      if (notes) {
+        lines.push("");
+        lines.push("Notes:");
+        lines.push(notes);
+      }
+
+      lines.push("");
+      lines.push(COMPANY_INFO.businessName);
+      lines.push(COMPANY_INFO.addressLines.join(" | "));
+
+      const subject = [
+        template.label + " Invoice " + els.invoiceNumber.value.trim(),
+        template.subjectAttention || ""
+      ].filter(Boolean).join(" | ");
+      const href = "mailto:" + encodeURIComponent(email) +
+        "?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(lines.join("\n"));
+      window.location.href = href;
+    }
+
+    function wireGlobalActions() {
+      document.getElementById("saveDraftBtn").addEventListener("click", () => saveDraft(false));
+      document.getElementById("nextInvoiceBtn").addEventListener("click", generateNextInvoiceNumber);
+      document.getElementById("resetFormBtn").addEventListener("click", resetCurrentForm);
+      document.getElementById("markCompleteBtn").addEventListener("click", markComplete);
+      document.getElementById("exportMonthCsvBtn").addEventListener("click", exportShownMonthCsv);
+      document.getElementById("clearMonthLogBtn").addEventListener("click", clearShownMonthLog);
+      document.getElementById("printBtn").addEventListener("click", () => {
+        saveDraft(true);
+        printWithSuggestedFilename();
+      });
+      document.getElementById("emailBtn").addEventListener("click", emailDraft);
+      document.getElementById("emailFieldBtn").addEventListener("click", emailDraft);
+      document.getElementById("selectAllBtn").addEventListener("click", () => {
+        els.equipmentGrid.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+          checkbox.checked = true;
+        });
+        recalc();
+        saveDraft(true);
+      });
+      document.getElementById("clearAllBtn").addEventListener("click", () => {
+        els.equipmentGrid.querySelectorAll("input[type='checkbox']").forEach((checkbox) => {
+          checkbox.checked = false;
+        });
+        recalc();
+        saveDraft(true);
+      });
+
+      ["invoiceDate", "invoiceNumber", "billToName", "billToEmail", "billToAddress", "taxLabel", "taxValue", "notes"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", () => {
+          recalc();
+          saveDraft(true);
+        });
+      });
+
+      els.companySelect.addEventListener("change", () => {
+        applyCompanyState(currentCompanyKey());
+        saveDraft(true);
+        setStatus("Loaded " + currentTemplate().label + " template.");
+      });
+    }
+
+    function init() {
+      buildCompanyOptions();
+      els.companySelect.value = "sprague";
+      if (!els.invoiceDate.value) {
+        els.invoiceDate.value = todayIso();
+      }
+      wireGlobalActions();
+      applyCompanyState("sprague");
+      setStatus("Template ready.");
+    }
+
+    init();
+  </script>
+</body>
+</html>
