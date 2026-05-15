@@ -116,6 +116,10 @@
       gap: 18px;
     }
 
+    body.app-locked .content {
+      display: none;
+    }
+
     .panel {
       background: var(--paper);
       border: 1px solid var(--line);
@@ -458,7 +462,7 @@
     }
   </style>
 </head>
-<body>
+<body class="app-locked">
   <div class="shell">
     <div class="masthead">
       <div style="margin-bottom: 14px;">
@@ -662,6 +666,7 @@
       businessName: "Angelo's Power Washing",
       addressLines: ["66 Centre Street", "Woodmere, NY 11598"]
     };
+    let appBootstrapped = false;
 
     const COMPANY_ORDER = [
       "bolla_transport_garden_city",
@@ -923,6 +928,14 @@
       status: document.getElementById("status"),
       templateHint: document.getElementById("templateHint")
     };
+
+    function lockAppUi() {
+      document.body.classList.add("app-locked");
+    }
+
+    function unlockAppUi() {
+      document.body.classList.remove("app-locked");
+    }
 
     function currency(value) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value || 0);
@@ -1600,6 +1613,8 @@
     function wireAuth() {
       const cloud = window.invoiceCloud;
       if (!cloud || !els.loginBtn || !els.logoutBtn || !els.userStatus) {
+        lockAppUi();
+        if (els.userStatus) els.userStatus.textContent = "Sign-in unavailable";
         return;
       }
 
@@ -1608,10 +1623,14 @@
           els.loginBtn.hidden = true;
           els.logoutBtn.hidden = false;
           els.userStatus.textContent = "Signed in: " + (user.email || user.displayName || "Google User");
+          unlockAppUi();
+          ensureAppReady();
         } else {
           els.loginBtn.hidden = false;
           els.logoutBtn.hidden = true;
           els.userStatus.textContent = "Not signed in";
+          lockAppUi();
+          setStatus("");
         }
       };
 
@@ -1638,16 +1657,22 @@
       });
     }
 
-    function init() {
+    function ensureAppReady() {
+      if (appBootstrapped) return;
+      appBootstrapped = true;
       buildCompanyOptions();
       els.companySelect.value = "sprague";
       if (!els.invoiceDate.value) {
         els.invoiceDate.value = todayIso();
       }
       wireGlobalActions();
-      wireAuth();
       applyCompanyState("sprague");
       setStatus("Template ready.");
+    }
+
+    function init() {
+      lockAppUi();
+      wireAuth();
     }
 
     init();
