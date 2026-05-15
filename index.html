@@ -461,6 +461,11 @@
 <body>
   <div class="shell">
     <div class="masthead">
+      <div style="margin-bottom: 14px;">
+        <button class="btn btn-accent" id="loginBtn" type="button">Sign in with Google</button>
+        <button class="btn btn-soft" id="logoutBtn" type="button" hidden>Sign Out</button>
+        <span id="userStatus" style="margin-left:10px;font-weight:700;"></span>
+      </div>
       <div class="masthead-top">
         <div>
           <p class="company-copy">
@@ -614,43 +619,40 @@
       </section>
     </div>
   </div>
-<!-- FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCO8YaOzmplivnF1_0-ST4TqCj6GsaXSKE",
-  authDomain: "invoice-project-6b2de.firebaseapp.com",
-  projectId: "invoice-project-6b2de",
-  storageBucket: "invoice-project-6b2de.firebasestorage.app",
-  messagingSenderId: "705027838140",
-  appId: "1:705027838140:web:ebe6911974e162edd4c0b9",
-  measurementId: "G-5E411XY41J"
-};
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const provider = new GoogleAuthProvider();
+    const firebaseConfig = {
+      apiKey: "AIzaSyCO8YaOzmplivnF1_0-ST4TqCj6GsaXSKE",
+      authDomain: "invoice-project-6b2de.firebaseapp.com",
+      projectId: "invoice-project-6b2de",
+      storageBucket: "invoice-project-6b2de.firebasestorage.app",
+      messagingSenderId: "705027838140",
+      appId: "1:705027838140:web:ebe6911974e162edd4c0b9",
+      measurementId: "G-5E411XY41J"
+    };
 
-  window.invoiceCloud = {
-    auth,
-    db,
-    provider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged,
-    doc,
-    setDoc,
-    getDoc
-  };
-</script>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-<!-- YOUR EXISTING SCRIPT -->
-<script>
-  const APP_KEY = "angelos_multi_company_invoice_v1";
+    window.invoiceCloud = {
+      auth,
+      db,
+      provider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged,
+      doc,
+      setDoc,
+      getDoc
+    };
+  </script>
+
   <script>
     const APP_KEY = "angelos_multi_company_invoice_v1";
     const SEQ_KEY = "angelos_multi_company_invoice_seq_v1";
@@ -892,6 +894,9 @@
     };
 
     const els = {
+      loginBtn: document.getElementById("loginBtn"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      userStatus: document.getElementById("userStatus"),
       companySelect: document.getElementById("companySelect"),
       invoiceDate: document.getElementById("invoiceDate"),
       invoiceNumber: document.getElementById("invoiceNumber"),
@@ -1592,6 +1597,47 @@
       });
     }
 
+    function wireAuth() {
+      const cloud = window.invoiceCloud;
+      if (!cloud || !els.loginBtn || !els.logoutBtn || !els.userStatus) {
+        return;
+      }
+
+      const setAuthUi = (user) => {
+        if (user) {
+          els.loginBtn.hidden = true;
+          els.logoutBtn.hidden = false;
+          els.userStatus.textContent = "Signed in: " + (user.email || user.displayName || "Google User");
+        } else {
+          els.loginBtn.hidden = false;
+          els.logoutBtn.hidden = true;
+          els.userStatus.textContent = "Not signed in";
+        }
+      };
+
+      cloud.onAuthStateChanged(cloud.auth, (user) => {
+        setAuthUi(user);
+      });
+
+      els.loginBtn.addEventListener("click", async () => {
+        try {
+          await cloud.signInWithPopup(cloud.auth, cloud.provider);
+          setStatus("Signed in with Google.");
+        } catch (err) {
+          setStatus("Google sign-in failed. " + (err?.message || ""));
+        }
+      });
+
+      els.logoutBtn.addEventListener("click", async () => {
+        try {
+          await cloud.signOut(cloud.auth);
+          setStatus("Signed out.");
+        } catch (err) {
+          setStatus("Sign out failed. " + (err?.message || ""));
+        }
+      });
+    }
+
     function init() {
       buildCompanyOptions();
       els.companySelect.value = "sprague";
@@ -1599,6 +1645,7 @@
         els.invoiceDate.value = todayIso();
       }
       wireGlobalActions();
+      wireAuth();
       applyCompanyState("sprague");
       setStatus("Template ready.");
     }
